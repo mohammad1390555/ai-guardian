@@ -1,4 +1,12 @@
-"""AI Guardian interactive CLI built with Rich."""
+"""AI Guardian interactive CLI built with Rich.
+
+Visual language:
+- Blue for structure and titles
+- Green for success / enabled states
+- Red for errors, failures, and critical findings
+- Yellow for warnings and medium severity
+- Gradient ASCII banner with a glass-style status panel
+"""
 
 from __future__ import annotations
 
@@ -8,12 +16,14 @@ import time
 from typing import List, Optional
 
 try:
-    from rich.console import Console
+    from rich.console import Console, Group
     from rich.panel import Panel
     from rich.table import Table
-    from rich.prompt import Prompt, IntPrompt
+    from rich.prompt import Prompt
     from rich.text import Text
-    from rich.live import Live
+    from rich.rule import Rule
+    from rich.align import Align
+    from rich import box
 except ImportError:  # pragma: no cover
     print("Missing dependency 'rich'. Install with: pip install rich")
     sys.exit(1)
@@ -29,38 +39,52 @@ from guardian.analysis.engine import AnalysisEngine, EngineEvent
 console = Console()
 
 BANNER = r"""
-   ___   __ _    _    _   _ ___
-  / _ \ / _| |  / \  | \ | |_ _|
- | (_) | |_| | / _ \ |  \| || |
-  \__, |  _| |/ ___ \| |\  || |
-    /_/|_| |_/_/   \_\_| \_|___|
-      Intelligent Code & UI Analysis
+ █████╗ ██╗ ██████╗ ██╗   ██╗ █████╗ ██████╗ ██████╗ ██╗██╗   ██╗ █████╗ ███╗   ██╗
+██╔══██╗██║██╔════╝ ██║   ██║██╔══██╗██╔══██╗██╔══██╗██║██║   ██║██╔══██╗████╗  ██║
+███████║██║██║  ███╗██║   ██║███████║██████╔╝██║  ██║██║██║   ██║███████║██╔██╗ ██║
+██╔══██║██║██║   ██║██║   ██║██╔══██║██╔══██╗██║  ██║██║╚██╗ ██╔╝██╔══██║██║╚██╗██║
+██║  ██║██║╚██████╔╝╚██████╔╝██║  ██║██║  ██║██████╔╝██║ ╚████╔╝ ██║  ██║██║ ╚████║
+╚═╝  ╚═╝╚═╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═══╝  ╚═╝  ╚═╝╚═╝  ╚═══╝
 """
 
+TAGLINE = "Intelligent Code & UI Analysis"
+
 SEVERITY_STYLES = {
-    "CRITICAL": "bold red",
-    "HIGH": "red",
+    "CRITICAL": "bold white on red",
+    "HIGH": "bold red",
     "MEDIUM": "yellow",
     "LOW": "cyan",
     "INFO": "dim",
 }
+SEVERITY_ICONS = {
+    "CRITICAL": "[!]",
+    "HIGH": "(!)",
+    "MEDIUM": "(m)",
+    "LOW": "(l)",
+    "INFO": "(i)",
+}
 
-COMMANDS_HELP = """[bold]Commands[/bold]
-  help          Show this help
-  status        Show session status panel
-  scan          Start (or resume) continuous analysis
-  pause         Pause the running analysis
-  resume        Resume a paused analysis
-  fix           Fix all open HIGH/CRITICAL findings now (requires auto fix)
-  findings      List current findings
-  report        Generate Markdown + JSON report
-  history       Show applied changes and fixes
-  config        Show or change configuration (e.g. `config set analysis.auto_fix true`)
-  mode          Switch mode: bug_fixer / ui_fixer / analyzer
-  validate      Run detected validation commands
-  rollback      Undo the most recent file change
-  clear         Clear the screen
-  exit          Save state and quit"""
+COMMANDS_HELP = """[bold blue]Commands[/bold blue]
+  [green]scan[/green]        Start (or resume) continuous analysis
+  [green]pause[/green]       Pause the running analysis
+  [green]resume[/green]      Resume a paused analysis
+  [green]fix[/green]         Fix all open HIGH/CRITICAL findings now
+  [green]findings[/green]    List current findings table
+  [green]status[/green]      Show session status panel
+  [green]report[/green]      Generate Markdown + JSON reports
+  [green]validate[/green]    Run detected validation commands
+  [green]history[/green]     Show applied file changes
+  [green]rollback[/green]    Undo the most recent change
+  [green]config[/green]      Show config or `config set key.sub value`
+  [green]mode[/green]        Switch mode: bug_fixer / ui_fixer / analyzer
+  [green]help[/green]        This help - [green]clear[/green] clear screen - [red]exit[/red] save & quit"""
+
+
+def _severity_color(counts: dict, severity: str) -> str:
+    n = counts.get(severity, 0)
+    if n == 0:
+        return "dim"
+    return {"CRITICAL": "bold red", "HIGH": "red", "MEDIUM": "yellow"}.get(severity, "cyan")
 
 
 class GuardianCLI:
@@ -80,17 +104,19 @@ class GuardianCLI:
     # ------------------------------------------------------------------
 
     def run(self) -> None:
-        console.print(Text(BANNER, style="bold blue"), justify="center")
-        console.print(Panel(
-            "[bold blue]AI PROJECT GUARDIAN[/bold blue]\n"
-            "Intelligent Code & UI Analysis",
-            border_style="blue", expand=False))
+        self._print_banner()
         console.print()
-
         self.config = self._load_config()
         self._select_project()
         self._show_project_summary()
         self._command_loop()
+
+    def _print_banner(self) -> None:
+        console.print()
+        banner_text = Text(BANNER.rstrip("\n"), style="bold blue")
+        console.print(Align.center(banner_text))
+        console.print(Align.center(Text(TAGLINE, style="italic bright_black")))
+        console.print(Rule(style="blue", characters="-"))
 
     def _load_config(self) -> Config:
         try:
@@ -105,10 +131,13 @@ class GuardianCLI:
 
     def _select_project(self) -> None:
         while True:
-            console.print("[bold]Project Selection[/bold]")
-            console.print("  1. Enter a project path")
-            console.print("  2. Use current directory")
-            console.print("  3. Browse directories\n")
+            console.print()
+            console.print(Panel(
+                "  1. Enter a project path\n"
+                "  2. Use current directory\n"
+                "  3. Browse directories",
+                title="[bold blue]Project Selection[/bold blue]",
+                border_style="blue", box=box.ROUNDED, expand=False))
             choice = Prompt.ask("Select option", choices=["1", "2", "3"], default="2")
 
             if choice == "1":
@@ -120,29 +149,24 @@ class GuardianCLI:
 
             path = os.path.abspath(os.path.expanduser(path))
             if not os.path.isdir(path):
-                console.print(f"[red]Not a directory:[/red] {path}\n")
-                continue
-            if os.path.basename(path) in (".git",):
-                console.print("[red]Please select a project directory, not .git[/red]\n")
+                console.print(f"[red]Not a directory:[/red] {path}")
                 continue
 
             self.project_root = path
             self.config.path = os.path.join(path, "guardian.json")
             if not os.path.exists(self.config.path):
                 self.config.save(self.config.path)
-                console.print(f"[green]Created default config:[/green] {self.config.path}")
+                console.print(f"[green]+ Created default config:[/green] {self.config.path}")
             try:
                 self.config = Config.load(self.config.path)
             except ConfigError as exc:
-                console.print(f"[red]Config error:[/red] {exc}\n")
+                console.print(f"[red]Config error:[/red] {exc}")
                 continue
 
-            mode_names = {"bug_fixer": "Bug Fixer", "ui_fixer": "UI Fixer",
-                          "analyzer": "Project Analyzer"}
-            console.print(f"\nMode is [bold]{mode_names[self.config.mode]}[/bold]. "
-                          f"Change it? (bug_fixer / ui_fixer / analyzer / enter to keep)")
-            new_mode = Prompt.ask("Mode", default=self.config.mode)
-            if new_mode in ("bug_fixer", "ui_fixer", "analyzer"):
+            new_mode = Prompt.ask(
+                "Mode", choices=["bug_fixer", "ui_fixer", "analyzer"],
+                default=self.config.mode)
+            if new_mode != self.config.mode:
                 self.config.mode = new_mode
                 self.config.save()
             break
@@ -156,12 +180,11 @@ class GuardianCLI:
                     if os.path.isdir(os.path.join(current, d)) and not d.startswith("."))
             except OSError:
                 entries = []
-            console.print(f"\n[bold]{current}[/bold]")
+            console.print(f"\n[bold blue]{current}[/bold blue]")
             for i, name in enumerate(entries[:20], 1):
-                console.print(f"  {i}. {name}/")
-            console.print("  ..  parent directory")
-            pick = Prompt.ask("Pick number, '..' to go up, or 's' to select this folder",
-                              default="s")
+                console.print(f"  [cyan]{i:>2}.[/cyan] {name}/")
+            console.print("   .. parent directory")
+            pick = Prompt.ask("Pick number | '..' up | 's' select here", default="s")
             if pick == "s":
                 return current
             if pick == "..":
@@ -173,33 +196,45 @@ class GuardianCLI:
             console.print("[red]Invalid choice.[/red]")
 
     # ------------------------------------------------------------------
-    # Summary
+    # Summary dashboard
     # ------------------------------------------------------------------
 
     def _show_project_summary(self) -> None:
         assert self.config is not None
-        console.print("\n[bold]Building project summary...[/bold]")
-        profile = Scanner(self.config).collect(self.project_root)
-        table = Table(show_header=False, box=None, padding=(0, 2))
-        table.add_row("[bold blue]Project:[/bold blue]", profile.name)
-        table.add_row("[bold blue]Path:[/bold blue]", profile.root)
-        table.add_row("[bold green]Files:[/bold green]",
-                      f"{len(profile.files) - profile.skipped_count} analyzable "
-                      f"/ {profile.skipped_count} skipped")
-        size_mb = profile.total_size_bytes / (1024 * 1024)
-        table.add_row("[bold green]Size:[/bold green]", f"{size_mb:.1f} MB")
-        table.add_row("[bold cyan]Detected:[/bold cyan]",
-                      ", ".join(profile.technologies) or "Unknown stack")
-        mode_names = {"bug_fixer": "Bug Fixer", "ui_fixer": "UI Fixer",
-                      "analyzer": "Project Analyzer"}
-        table.add_row("[bold magenta]Mode:[/bold magenta]", mode_names[self.config.mode])
-        af = "[green]ENABLED[/green]" if self.config.auto_fix else "[red]DISABLED[/red]"
-        table.add_row("Auto Fix:", af)
-        console.print(table)
+        with console.status("Building project summary...", spinner="dots"):
+            profile = Scanner(self.config).collect(self.project_root)
         self.profile = profile
 
+        mode_names = {"bug_fixer": "Bug Fixer", "ui_fixer": "UI Fixer",
+                      "analyzer": "Project Analyzer"}
+        af = "[green]ON[/green]" if self.config.auto_fix else "[red]OFF[/red]"
+        size_mb = profile.total_size_bytes / (1024 * 1024)
+        techs = ", ".join(profile.technologies[:6]) or "Unknown stack"
+
+        grid = Table.grid(padding=(0, 2))
+        grid.add_column(style="bold blue", justify="right")
+        grid.add_column()
+        grid.add_row("Project:", f"[bold]{profile.name}[/bold]")
+        grid.add_row("Path:", profile.root)
+        grid.add_row("Files:", f"{len(profile.files) - profile.skipped_count} analyzable "
+                               f"[dim]/ {profile.skipped_count} skipped[/dim]")
+        grid.add_row("Size:", f"{size_mb:.1f} MB")
+        grid.add_row("Detected:", f"[cyan]{techs}[/cyan]")
+        grid.add_row("Mode:", f"[magenta bold]{mode_names[self.config.mode]}[/magenta bold]")
+        grid.add_row("Auto Fix:", af)
+
+        langs = sorted(profile.languages.items(), key=lambda kv: kv[1], reverse=True)[:5]
+        if langs:
+            lang_row = "  ".join(
+                f"[cyan]{n}[/cyan] x{c}" for n, c in langs)
+            grid.add_row("Languages:", lang_row)
+
+        console.print()
+        console.print(Panel(grid, title="[bold blue]Project Summary[/bold blue]",
+                            border_style="blue", box=box.ROUNDED, expand=False))
+
     # ------------------------------------------------------------------
-    # Command loop
+    # Engine + backup helpers
     # ------------------------------------------------------------------
 
     def _ensure_engine(self) -> bool:
@@ -220,22 +255,28 @@ class GuardianCLI:
     def _maybe_backup(self) -> bool:
         self.backup_manager = BackupManager(self.config)
         if not self.backup_manager.enabled:
+            console.print("[yellow]Backups disabled in config.[/yellow]")
             return True
         try:
             with console.status("Creating project backup...", spinner="dots"):
                 self.backup_dir = self.backup_manager.create_backup(
                     self.project_root, f"guardian_{int(time.time())}")
-            console.print(f"[green]Backup created:[/green] {self.backup_dir}")
+            console.print(f"[green]+ Backup created:[/green] {self.backup_dir}")
             return True
         except BackupError as exc:
             ok = console.input(f"[yellow]{exc} Continue without backup? (y/N) [/yellow]")
             return ok.strip().lower() == "y"
 
+    # ------------------------------------------------------------------
+    # Command loop
+    # ------------------------------------------------------------------
+
     def _command_loop(self) -> None:
-        console.print("\nType 'help' for commands.\n")
+        console.print()
+        console.print(f"Type [green]help[/green] for commands.\n")
         while True:
             try:
-                raw = Prompt.ask("[bold blue]guardian[/bold blue]").strip()
+                raw = Prompt.ask("[bold blue]guardian[/bold blue]>").strip()
             except (EOFError, KeyboardInterrupt):
                 raw = "exit"
             if not raw:
@@ -243,9 +284,6 @@ class GuardianCLI:
             parts = raw.split()
             cmd, args = parts[0].lower(), parts[1:]
             handler = getattr(self, f"_cmd_{cmd}", None)
-            known = {"help", "status", "scan", "pause", "resume", "fix", "findings",
-                     "report", "history", "config", "mode", "validate", "rollback",
-                     "clear", "exit", "quit"}
             if cmd == "help":
                 console.print(COMMANDS_HELP)
             elif handler:
@@ -262,7 +300,7 @@ class GuardianCLI:
         if self.engine:
             self.engine.request_stop()
             self.engine.state.save()
-        console.print("[green]Session state saved. Goodbye.[/green]")
+        console.print("[green]+ Session state saved. Goodbye.[/green]")
 
     # ------------------------------------------------------------------
     # Commands
@@ -273,8 +311,10 @@ class GuardianCLI:
             return
         if not self._maybe_backup():
             return
-        console.print("[bold blue]Starting continuous analysis. "
-                      "Use 'pause', 'resume', or 'exit' to control it.[/bold blue]\n")
+        console.print()
+        console.print(Rule("[bold blue]Continuous Analysis Running[/bold blue]",
+                           style="blue"))
+        console.print("[dim]Use 'pause', 'resume', or 'exit' to control it.[/dim]\n")
         try:
             self.engine.run()
         except KeyboardInterrupt:
@@ -285,26 +325,42 @@ class GuardianCLI:
 
     def _print_run_summary(self) -> None:
         e = self.engine
-        fixed = sum(1 for f in e.store.findings if f.status == "fixed")
-        open_count = sum(1 for f in e.store.findings if f.status == "open")
-        console.print(Panel(
-            f"Files analyzed: {e.files_analyzed_count}\n"
-            f"Findings total: {len(e.store.findings)}\n"
-            f"Fixed: [green]{fixed}[/green]\n"
-            f"Still open: [yellow]{open_count}[/yellow]\n"
-            f"Tokens used: {getattr(e.llm, 'tokens_used', 0)}\n"
-            f"Notepad: {os.path.join(e.root, '.guardian_findings.md')}",
-            title="[bold blue]Run Complete[/bold blue]", border_style="blue"))
+        counts = {s: 0 for s in SEVERITY_ORDER}
+        fixed = open_count = 0
+        for f in e.store.findings:
+            counts[f.severity] = counts.get(f.severity, 0) + 1
+            if f.status == "fixed":
+                fixed += 1
+            elif f.status == "open":
+                open_count += 1
+
+        sev_line = "   ".join(
+            f"[{_severity_color(counts, s)}]{s}: {counts.get(s, 0)}[/{_severity_color(counts, s)}]"
+            for s in SEVERITY_ORDER)
+
+        grid = Table.grid(padding=(0, 2))
+        grid.add_column(style="bold blue", justify="right")
+        grid.add_column()
+        grid.add_row("Files analyzed:", str(e.files_analyzed_count))
+        grid.add_row("Findings:", sev_line)
+        grid.add_row("Fixed:", f"[green]{fixed}[/green]")
+        grid.add_row("Open:", f"[yellow]{open_count}[/yellow]")
+        grid.add_row("Tokens:", str(getattr(e.llm, "tokens_used", 0)))
+        grid.add_row("Notepad:", os.path.join(e.root, ".guardian_findings.md"))
+
+        console.print()
+        console.print(Panel(grid, title="[bold green]Run Complete[/bold green]",
+                            border_style="green", box=box.ROUNDED, expand=False))
 
     def _cmd_pause(self, args) -> None:
         if self.engine:
             self.engine.paused = True
-            console.print("[yellow]Paused after the current file.[/yellow]")
+            console.print("[yellow]|| Paused after the current file.[/yellow]")
 
     def _cmd_resume(self, args) -> None:
         if self.engine:
             self.engine.paused = False
-            console.print("[green]Resumed.[/green]")
+            console.print("[green]-> Resumed.[/green]")
 
     def _cmd_status(self, args) -> None:
         if not self.engine:
@@ -313,36 +369,43 @@ class GuardianCLI:
         e = self.engine
         remaining = len(e.state.data.get("files_remaining", []))
         analyzed = len(e.state.data.get("files_analyzed", []))
-        console.print(Panel(
-            f"Project: {self.project_root}\n"
-            f"Mode: {self.config.mode}\n"
-            f"Auto Fix: {'ON' if self.config.auto_fix else 'OFF'}\n"
-            f"Files analyzed: {analyzed}\n"
-            f"Files remaining: {remaining}\n"
-            f"Findings: {len(e.store.findings)}\n"
-            f"Tokens used: {getattr(e.llm, 'tokens_used', 0)}\n"
-            f"Requests used: {getattr(e.llm, 'requests_used', 0)}\n"
-            f"Paused: {'yes' if e.paused else 'no'}",
-            title="[bold blue]Status[/bold blue]", border_style="blue"))
+        af = "[green]ON[/green]" if self.config.auto_fix else "[red]OFF[/red]"
+        grid = Table.grid(padding=(0, 2))
+        grid.add_column(style="bold blue", justify="right")
+        grid.add_column()
+        grid.add_row("Project:", self.project_root)
+        grid.add_row("Mode:", self.config.mode)
+        grid.add_row("Auto Fix:", af)
+        grid.add_row("Analyzed / Remaining:", f"{analyzed} / {remaining}")
+        grid.add_row("Findings:", str(len(e.store.findings)))
+        grid.add_row("Tokens / Requests:",
+                     f"{getattr(e.llm, 'tokens_used', 0)} / "
+                     f"{getattr(e.llm, 'requests_used', 0)}")
+        grid.add_row("Paused:", "yes" if e.paused else "no")
+        console.print(Panel(grid, title="[bold blue]Status[/bold blue]",
+                            border_style="blue", box=box.ROUNDED, expand=False))
 
     def _cmd_findings(self, args) -> None:
         if not self.engine or not self.engine.store.findings:
             console.print("[dim]No findings yet.[/dim]")
             return
-        table = Table(title="Findings", border_style="blue")
-        table.add_column("Severity", max_width=9)
+        table = Table(title="Findings", border_style="blue", box=box.ROUNDED,
+                      header_style="bold blue")
+        table.add_column("Sev", max_width=9)
         table.add_column("File", max_width=42)
         table.add_column("Line", justify="right")
-        table.add_column("Conf.", justify="right")
+        table.add_column("Conf", justify="right")
         table.add_column("Category")
         table.add_column("Status")
         for f in sorted(self.engine.store.findings, key=lambda x: x.sort_key()):
             style = SEVERITY_STYLES.get(f.severity, "")
+            icon = SEVERITY_ICONS.get(f.severity, "")
             conf = f"{int(f.confidence * 100)}%"
-            status_color = {"fixed": "green", "fix_failed": "red"}.get(f.status, "")
-            table.add_row(Text(f.severity, style=style), f.file, str(f.line),
-                          conf, f.category,
-                          Text(f.status, style=status_color))
+            status_style = {"fixed": "green", "fix_failed": "red",
+                            "open": "yellow"}.get(f.status, "dim")
+            table.add_row(Text(f"{icon} {f.severity}", style=style), f.file,
+                          str(f.line), conf, f.category,
+                          Text(f.status.upper(), style=status_style))
         console.print(table)
 
     def _cmd_fix(self, args) -> None:
@@ -360,14 +423,15 @@ class GuardianCLI:
         targets = [f for f in self.engine.store.findings
                    if f.status == "open" and f.severity in ("CRITICAL", "HIGH")]
         if not targets:
-            console.print("[green]No open CRITICAL/HIGH findings to fix.[/green]")
+            console.print("[green]+ No open CRITICAL/HIGH findings to fix.[/green]")
             return
-        console.print(f"[bold]Fixing {len(targets)} high-severity finding(s)...[/bold]")
+        console.print(f"\n[bold red]Fixing {len(targets)} high-severity finding(s)...[/bold red]\n")
         for f in targets:
             ok, note = self.engine._apply_fix(f)
             style = "green" if ok else "red"
-            console.print(f"[{style}]{'FIXED' if ok else 'FAILED'}[/{style}] "
-                          f"{f.file}:{f.line} - {note}")
+            label = "+ FIXED" if ok else "x FAILED"
+            console.print(f"[{style}]{label}[/{style}] {f.file}:{f.line}"
+                          + (f" [dim]- {note}[/dim]" if note else ""))
 
     def _cmd_report(self, args) -> None:
         if not self.engine:
@@ -375,8 +439,8 @@ class GuardianCLI:
             return
         gen = ReportGenerator(self.project_root, self.config)
         md_path, json_path = gen.generate(self.engine, self.last_validation or [])
-        console.print(f"[green]Markdown report:[/green] {md_path}")
-        console.print(f"[green]JSON report:[/green] {json_path}")
+        console.print(f"[green]+ Markdown report:[/green] {md_path}")
+        console.print(f"[green]+ JSON report:[/green]     {json_path}")
 
     def _cmd_validate(self, args) -> None:
         cmds = discover_commands(self.project_root, self.config)
@@ -389,7 +453,8 @@ class GuardianCLI:
                 vr = run_validation(self.project_root, c)
             results.append(vr)
             style = "green" if vr.ok else "red"
-            console.print(f"[{style}]{'PASS' if vr.ok else 'FAIL'}[/{style}] {c}")
+            label = "PASS" if vr.ok else "FAIL"
+            console.print(f"[{style}]{label}[/{style}] {c}")
         self.last_validation = results
 
     def _cmd_history(self, args) -> None:
@@ -401,14 +466,14 @@ class GuardianCLI:
             lines = fh.readlines()
         console.print(f"[bold]{len(lines)} recorded change(s):[/bold]")
         for line in lines[-20:]:
-            console.print(f"  {line.rstrip()}")
+            console.print(f"  [dim]{line.rstrip()}[/dim]")
 
     def _cmd_rollback(self, args) -> None:
         if not self.engine or not self.engine.changes.entries:
             console.print("[dim]Nothing to roll back.[/dim]")
             return
         if self.engine.changes.rollback_last(None):
-            console.print("[green]Rolled back the last file change.[/green]")
+            console.print("[green]+ Rolled back the last file change.[/green]")
         else:
             console.print("[red]Rollback failed.[/red]")
 
@@ -428,11 +493,11 @@ class GuardianCLI:
                 self.config.set(key, parsed)
                 self.config._validate()
                 self.config.save()
-                console.print(f"[green]Saved:[/green] {key} = {parsed}")
+                console.print(f"[green]+ Saved:[/green] {key} = {parsed}")
             except ConfigError as exc:
                 console.print(f"[red]{exc}[/red]")
         else:
-            console.print("Usage: config set <dotted.key> <value>")
+            console.print("Usage: [green]config set <dotted.key> <value>[/green]")
 
     def _cmd_mode(self, args) -> None:
         modes = ["bug_fixer", "ui_fixer", "analyzer"]
@@ -444,10 +509,11 @@ class GuardianCLI:
         self.config.mode = target
         self.config.save()
         self.engine = None  # force engine rebuild with the new mode
-        console.print(f"[green]Mode set to {target}. Run 'scan' to apply.[/green]")
+        console.print(f"[green]+ Mode set to {target}. Run 'scan' to apply.[/green]")
 
     def _cmd_clear(self, args) -> None:
         console.clear()
+        self._print_banner()
 
     def _cmd_exit(self, args) -> None:
         self._save_and_exit()
@@ -459,25 +525,28 @@ class GuardianCLI:
 
     @staticmethod
     def _render_file_progress(path: str, idx: int, total: int) -> None:
-        pct = int(idx * 100 / max(total, 1))
+        pct = idx * 100 // max(total, 1)
         filled = int(pct / 5)
-        bar = "#" * filled + "-" * (20 - filled)
-        console.print(f"\n[cyan][{bar:<20}] {pct}%[/cyan] ({idx}/{total})")
+        bar = "#" * filled + "." * (20 - filled)
+        console.print(f"\n[cyan][{bar:<20}] {pct:>3}%[/cyan] [dim]({idx}/{total})[/dim]")
         console.print(f"[dim]Analyzing:[/dim] {path}")
 
     @staticmethod
     def _render_finding(finding) -> None:
         style = SEVERITY_STYLES.get(finding.severity, "")
-        console.print(f"  [{style}]FINDING [{finding.severity}][/{style}] "
-                      f"{finding.file}:{finding.line} - {finding.category}")
-        console.print(f"  [dim]{finding.description}[/dim]")
+        icon = SEVERITY_ICONS.get(finding.severity, "")
+        conf = int(finding.confidence * 100)
+        console.print(f"  [{style}]{icon} {finding.severity}[/{style}] "
+                      f"{finding.file}:{finding.line} - {finding.category} "
+                      f"[dim]({conf}%)[/dim]")
+        console.print(f"    [dim]{finding.description}[/dim]")
 
     @staticmethod
     def _render_fix(finding, ok: bool, note: str) -> None:
         style = "green" if ok else "red"
-        label = "FIX APPLIED" if ok else "FIX FAILED"
-        console.print(f"  [{style}]{label}[/{style}] {finding.file}:{finding.line}"
-                      + (f" - {note}" if note else ""))
+        label = "+ FIX APPLIED" if ok else "x FIX FAILED"
+        suffix = f" [dim]- {note}[/dim]" if note else ""
+        console.print(f"  [{style}]{label}[/{style}] {finding.file}:{finding.line}{suffix}")
 
     @staticmethod
     def _render_status(text: str) -> None:
