@@ -18,6 +18,7 @@ applies conservative targeted fixes, validates the result, and keeps going.
 ## Installation
 
 ```bash
+pip install -r requirements.txt
 pip install .
 ```
 
