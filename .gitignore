@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.backups/
+reports/
+.guardian_state.json
+.guardian_findings.md
+.guardian_changes.jsonl
