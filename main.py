@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ─── Made by Mohammad — github.com/mohammad1390555 ───
 """AI Guardian - main entry point.
 
 Run directly with:

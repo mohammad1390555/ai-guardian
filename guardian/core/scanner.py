@@ -1,3 +1,4 @@
+# ─── Made by Mohammad — github.com/mohammad1390555 ───
 """Filesystem scanner with filtering, binary detection, and project profiling."""
 
 from __future__ import annotations

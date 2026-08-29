@@ -1,3 +1,4 @@
+# ─── Made by Mohammad — github.com/mohammad1390555 ───
 """AI Guardian interactive CLI built with Rich.
 
 Visual language:

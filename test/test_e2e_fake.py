@@ -1,3 +1,4 @@
+# ─── Made by Mohammad — github.com/mohammad1390555 ───
 """End-to-end engine test with a fake LLM (no network)."""
 import json
 from guardian.core.config import Config

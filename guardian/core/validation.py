@@ -1,3 +1,4 @@
+# ─── Made by Mohammad — github.com/mohammad1390555 ───
 """Technology-aware post-fix validation. Never runs destructive commands."""
 
 from __future__ import annotations

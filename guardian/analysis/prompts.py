@@ -1,3 +1,4 @@
+# ─── Made by Mohammad — github.com/mohammad1390555 ───
 """Prompt templates for each analysis mode. English only, no emojis."""
 
 BUG_FIXER_SYSTEM = """You are a senior software engineer performing a rigorous bug audit.

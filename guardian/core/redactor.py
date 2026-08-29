@@ -1,3 +1,4 @@
+# ─── Made by Mohammad — github.com/mohammad1390555 ───
 """Secret detection and redaction before content is sent to the AI API."""
 
 from __future__ import annotations

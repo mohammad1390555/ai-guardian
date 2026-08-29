@@ -1,3 +1,4 @@
+# ─── Made by Mohammad — github.com/mohammad1390555 ───
 """Backup system with timestamped directories and metadata."""
 
 from __future__ import annotations

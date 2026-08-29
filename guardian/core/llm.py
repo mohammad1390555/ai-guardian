@@ -1,3 +1,4 @@
+# ─── Made by Mohammad — github.com/mohammad1390555 ───
 """LLM client built on the OpenAI SDK with retry, backoff, and reasoning support."""
 
 from __future__ import annotations

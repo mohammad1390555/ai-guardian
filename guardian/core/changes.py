@@ -1,3 +1,4 @@
+# ─── Made by Mohammad — github.com/mohammad1390555 ───
 """Atomic file writes, change log, and path safety."""
 
 from __future__ import annotations

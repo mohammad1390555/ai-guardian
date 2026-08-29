@@ -1,3 +1,4 @@
+# ─── Made by Mohammad — github.com/mohammad1390555 ───
 """Continuous analysis engine: scan, map, analyze, fix, re-check, loop."""
 
 from __future__ import annotations

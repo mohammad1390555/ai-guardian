@@ -1,3 +1,4 @@
+# ─── Made by Mohammad — github.com/mohammad1390555 ───
 """Persistent session state for resume-after-crash support."""
 
 from __future__ import annotations

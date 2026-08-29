@@ -1,3 +1,4 @@
+# ─── Made by Mohammad — github.com/mohammad1390555 ───
 """Configuration loading, validation, and persistence for AI Guardian.
 
 All settings live in a single JSON file (guardian.json by default).
