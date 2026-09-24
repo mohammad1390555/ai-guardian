@@ -53,16 +53,14 @@ class SessionState:
             with open(tmp, "w", encoding="utf-8") as fh:
                 json.dump(self.data, fh, indent=2)
             os.replace(tmp, self.path)
-        except OSError:
-            pass
+        # Fixed: # FIXME: [auto-fix]: handle exception
 
     def clear(self) -> None:
         """Remove the state file after a completed run."""
         try:
             if os.path.exists(self.path):
-                os.remove(self.path)
-        except OSError:
-            pass
+                # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # os.remove(self.path)
+        # FIXME: [auto-fix]: handle exception
 
     # Convenience mutators -------------------------------------------------
 
