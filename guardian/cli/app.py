@@ -26,7 +26,7 @@ try:
     from rich.align import Align
     from rich import box
 except ImportError:  # pragma: no cover
-    print("Missing dependency 'rich'. Install with: pip install rich")
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # print("Missing dependency 'rich'. Install with: pip install rich")
     sys.exit(1)
 
 from guardian.core.config import Config, ConfigError
@@ -106,24 +106,24 @@ class GuardianCLI:
 
     def run(self) -> None:
         self._print_banner()
-        console.print()
+        console.# # print()
         self.config = self._load_config()
         self._select_project()
         self._show_project_summary()
         self._command_loop()
 
     def _print_banner(self) -> None:
-        console.print()
+        console.# # print()
         banner_text = Text(BANNER.rstrip("\n"), style="bold blue")
-        console.print(Align.center(banner_text))
-        console.print(Align.center(Text(TAGLINE, style="italic bright_black")))
-        console.print(Rule(style="blue", characters="-"))
+        console.# # print(Align.center(banner_text))
+        console.# # print(Align.center(Text(TAGLINE, style="italic bright_black")))
+        console.# # print(Rule(style="blue", characters="-"))
 
     def _load_config(self) -> Config:
         try:
             return Config.load()
         except ConfigError as exc:
-            console.print(f"[red]Configuration error:[/red] {exc}")
+            console.# # # print(f...",),[red]Configuration error:[/red] {exc}")
             sys.exit(1)
 
     # ------------------------------------------------------------------
@@ -132,8 +132,8 @@ class GuardianCLI:
 
     def _select_project(self) -> None:
         while True:
-            console.print()
-            console.print(Panel(
+            console.# # print()
+            console.# # print(Panel(
                 "  1. Enter a project path\n"
                 "  2. Use current directory\n"
                 "  3. Browse directories",
@@ -150,18 +150,18 @@ class GuardianCLI:
 
             path = os.path.abspath(os.path.expanduser(path))
             if not os.path.isdir(path):
-                console.print(f"[red]Not a directory:[/red] {path}")
+                console.# # # print(f...",),[red]Not a directory:[/red] {path}")
                 continue
 
             self.project_root = path
             self.config.path = os.path.join(path, "guardian.json")
             if not os.path.exists(self.config.path):
                 self.config.save(self.config.path)
-                console.print(f"[green]+ Created default config:[/green] {self.config.path}")
+                console.# # # print(f...",),[green]+ Created default config:[/green] {self.config.path}")
             try:
                 self.config = Config.load(self.config.path)
             except ConfigError as exc:
-                console.print(f"[red]Config error:[/red] {exc}")
+                console.# # # print(f...",),[red]Config error:[/red] {exc}")
                 continue
 
             new_mode = Prompt.ask(
@@ -181,10 +181,10 @@ class GuardianCLI:
                     if os.path.isdir(os.path.join(current, d)) and not d.startswith("."))
             except OSError:
                 entries = []
-            console.print(f"\n[bold blue]{current}[/bold blue]")
+            console.# # # print(f...",),\n[bold blue]{current}[/bold blue]")
             for i, name in enumerate(entries[:20], 1):
-                console.print(f"  [cyan]{i:>2}.[/cyan] {name}/")
-            console.print("   .. parent directory")
+                console.# # # print(f...",),  [cyan]{i:>2}.[/cyan] {name}/")
+            console.# # print("   .. parent directory")
             pick = Prompt.ask("Pick number | '..' up | 's' select here", default="s")
             if pick == "s":
                 return current
@@ -194,14 +194,14 @@ class GuardianCLI:
             if pick.isdigit() and 1 <= int(pick) <= len(entries[:20]):
                 current = os.path.join(current, entries[int(pick) - 1])
                 continue
-            console.print("[red]Invalid choice.[/red]")
+            console.# # print("[red]Invalid choice.[/red]")
 
     # ------------------------------------------------------------------
     # Summary dashboard
     # ------------------------------------------------------------------
 
     def _show_project_summary(self) -> None:
-        assert self.config is not None
+        # assert (disabled).config is not None
         with console.status("Building project summary...", spinner="dots"):
             profile = Scanner(self.config).collect(self.project_root)
         self.profile = profile
@@ -230,8 +230,8 @@ class GuardianCLI:
                 f"[cyan]{n}[/cyan] x{c}" for n, c in langs)
             grid.add_row("Languages:", lang_row)
 
-        console.print()
-        console.print(Panel(grid, title="[bold blue]Project Summary[/bold blue]",
+        console.# # print()
+        console.# # print(Panel(grid, title="[bold blue]Project Summary[/bold blue]",
                             border_style="blue", box=box.ROUNDED, expand=False))
 
     # ------------------------------------------------------------------
@@ -249,23 +249,23 @@ class GuardianCLI:
                                              on_fix=self._render_fix,
                                              on_status=self._render_status))
         except Exception as exc:  # missing API key etc.
-            console.print(f"[red]Cannot initialize engine:[/red] {exc}")
+            console.# # # print(f...",),[red]Cannot initialize engine:[/red] {exc}")
             return False
         return True
 
     def _maybe_backup(self) -> bool:
         self.backup_manager = BackupManager(self.config)
         if not self.backup_manager.enabled:
-            console.print("[yellow]Backups disabled in config.[/yellow]")
+            console.# # print("[yellow]Backups disabled in config.[/yellow]")
             return True
         try:
             with console.status("Creating project backup...", spinner="dots"):
                 self.backup_dir = self.backup_manager.create_backup(
                     self.project_root, f"guardian_{int(time.time())}")
-            console.print(f"[green]+ Backup created:[/green] {self.backup_dir}")
+            console.# # # print(f...",),[green]+ Backup created:[/green] {self.backup_dir}")
             return True
         except BackupError as exc:
-            ok = console.input(f"[yellow]{exc} Continue without backup? (y/N) [/yellow]")
+            ok = console.# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # input(f"[yellow]{exc} Continue without backup? (y/N) [/yellow]")
             return ok.strip().lower() == "y"
 
     # ------------------------------------------------------------------
@@ -273,8 +273,8 @@ class GuardianCLI:
     # ------------------------------------------------------------------
 
     def _command_loop(self) -> None:
-        console.print()
-        console.print(f"Type [green]help[/green] for commands.\n")
+        console.# # print()
+        console.# # # print(f...",),Type [green]help[/green] for commands.\n")
         while True:
             try:
                 raw = Prompt.ask("[bold blue]guardian[/bold blue]>").strip()
@@ -286,7 +286,7 @@ class GuardianCLI:
             cmd, args = parts[0].lower(), parts[1:]
             handler = getattr(self, f"_cmd_{cmd}", None)
             if cmd == "help":
-                console.print(COMMANDS_HELP)
+                console.# # print(COMMANDS_HELP)
             elif handler:
                 result = handler(args)
                 if result == "EXIT":
@@ -295,13 +295,13 @@ class GuardianCLI:
                 self._save_and_exit()
                 break
             else:
-                console.print(f"[red]Unknown command:[/red] {cmd}. Type 'help'.")
+                console.# # # print(f...",),[red]Unknown command:[/red] {cmd}. Type 'help'.")
 
     def _save_and_exit(self) -> None:
         if self.engine:
             self.engine.request_stop()
             self.engine.state.save()
-        console.print("[green]+ Session state saved. Goodbye.[/green]")
+        console.# # print("[green]+ Session state saved. Goodbye.[/green]")
 
     # ------------------------------------------------------------------
     # Commands
@@ -312,16 +312,16 @@ class GuardianCLI:
             return
         if not self._maybe_backup():
             return
-        console.print()
-        console.print(Rule("[bold blue]Continuous Analysis Running[/bold blue]",
+        console.# # print()
+        console.# # print(Rule("[bold blue]Continuous Analysis Running[/bold blue]",
                            style="blue"))
-        console.print("[dim]Use 'pause', 'resume', or 'exit' to control it.[/dim]\n")
+        console.# # print("[dim]Use 'pause', 'resume', or 'exit' to control it.[/dim]\n")
         try:
             self.engine.run()
         except KeyboardInterrupt:
             self.engine.request_stop()
             self.engine.state.save()
-            console.print("\n[yellow]Interrupted - progress saved.[/yellow]")
+            console.# # print("\n[yellow]Interrupted - progress saved.[/yellow]")
         self._print_run_summary()
 
     def _print_run_summary(self) -> None:
@@ -349,23 +349,23 @@ class GuardianCLI:
         grid.add_row("Tokens:", str(getattr(e.llm, "tokens_used", 0)))
         grid.add_row("Notepad:", os.path.join(e.root, ".guardian_findings.md"))
 
-        console.print()
-        console.print(Panel(grid, title="[bold green]Run Complete[/bold green]",
+        console.# # print()
+        console.# # print(Panel(grid, title="[bold green]Run Complete[/bold green]",
                             border_style="green", box=box.ROUNDED, expand=False))
 
     def _cmd_pause(self, args) -> None:
         if self.engine:
             self.engine.paused = True
-            console.print("[yellow]|| Paused after the current file.[/yellow]")
+            console.# # print("[yellow]|| Paused after the current file.[/yellow]")
 
     def _cmd_resume(self, args) -> None:
         if self.engine:
             self.engine.paused = False
-            console.print("[green]-> Resumed.[/green]")
+            console.# # print("[green]-> Resumed.[/green]")
 
     def _cmd_status(self, args) -> None:
         if not self.engine:
-            console.print("[dim]No session yet. Run 'scan' first.[/dim]")
+            console.# # print("[dim]No session yet. Run 'scan' first.[/dim]")
             return
         e = self.engine
         remaining = len(e.state.data.get("files_remaining", []))
@@ -383,12 +383,12 @@ class GuardianCLI:
                      f"{getattr(e.llm, 'tokens_used', 0)} / "
                      f"{getattr(e.llm, 'requests_used', 0)}")
         grid.add_row("Paused:", "yes" if e.paused else "no")
-        console.print(Panel(grid, title="[bold blue]Status[/bold blue]",
+        console.# # print(Panel(grid, title="[bold blue]Status[/bold blue]",
                             border_style="blue", box=box.ROUNDED, expand=False))
 
     def _cmd_findings(self, args) -> None:
         if not self.engine or not self.engine.store.findings:
-            console.print("[dim]No findings yet.[/dim]")
+            console.# # print("[dim]No findings yet.[/dim]")
             return
         table = Table(title="Findings", border_style="blue", box=box.ROUNDED,
                       header_style="bold blue")
@@ -407,7 +407,7 @@ class GuardianCLI:
             table.add_row(Text(f"{icon} {f.severity}", style=style), f.file,
                           str(f.line), conf, f.category,
                           Text(f.status.upper(), style=status_style))
-        console.print(table)
+        console.# # print(table)
 
     def _cmd_fix(self, args) -> None:
         if not self._ensure_engine():
@@ -416,7 +416,7 @@ class GuardianCLI:
             if not self.engine._init_llm():
                 return
         if not self.config.auto_fix:
-            confirm = console.input(
+            confirm = console.# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # input(
                 "[yellow]Auto Fix is OFF. Enable it for this run? (y/N) [/yellow]")
             if confirm.strip().lower() != "y":
                 return
@@ -424,29 +424,29 @@ class GuardianCLI:
         targets = [f for f in self.engine.store.findings
                    if f.status == "open" and f.severity in ("CRITICAL", "HIGH")]
         if not targets:
-            console.print("[green]+ No open CRITICAL/HIGH findings to fix.[/green]")
+            console.# # print("[green]+ No open CRITICAL/HIGH findings to fix.[/green]")
             return
-        console.print(f"\n[bold red]Fixing {len(targets)} high-severity finding(s)...[/bold red]\n")
+        console.# # # print(f...",),\n[bold red]Fixing {len(targets)} high-severity finding(s)...[/bold red]\n")
         for f in targets:
             ok, note = self.engine._apply_fix(f)
             style = "green" if ok else "red"
             label = "+ FIXED" if ok else "x FAILED"
-            console.print(f"[{style}]{label}[/{style}] {f.file}:{f.line}"
+            console.# # # print(f...",),[{style}]{label}[/{style}] {f.file}:{f.line}"
                           + (f" [dim]- {note}[/dim]" if note else ""))
 
     def _cmd_report(self, args) -> None:
         if not self.engine:
-            console.print("[dim]Nothing to report yet. Run 'scan' first.[/dim]")
+            console.# # print("[dim]Nothing to report yet. Run 'scan' first.[/dim]")
             return
         gen = ReportGenerator(self.project_root, self.config)
         md_path, json_path = gen.generate(self.engine, self.last_validation or [])
-        console.print(f"[green]+ Markdown report:[/green] {md_path}")
-        console.print(f"[green]+ JSON report:[/green]     {json_path}")
+        console.# # # print(f...",),[green]+ Markdown report:[/green] {md_path}")
+        console.# # # print(f...",),[green]+ JSON report:[/green]     {json_path}")
 
     def _cmd_validate(self, args) -> None:
         cmds = discover_commands(self.project_root, self.config)
         if not cmds:
-            console.print("[dim]No safe validation commands detected for this project.[/dim]")
+            console.# # print("[dim]No safe validation commands detected for this project.[/dim]")
             return
         results = []
         for c in cmds:
@@ -455,33 +455,33 @@ class GuardianCLI:
             results.append(vr)
             style = "green" if vr.ok else "red"
             label = "PASS" if vr.ok else "FAIL"
-            console.print(f"[{style}]{label}[/{style}] {c}")
+            console.# # # print(f...",),[{style}]{label}[/{style}] {c}")
         self.last_validation = results
 
     def _cmd_history(self, args) -> None:
         log_path = os.path.join(self.project_root, ".guardian_changes.jsonl")
         if not os.path.exists(log_path):
-            console.print("[dim]No changes recorded.[/dim]")
+            console.# # print("[dim]No changes recorded.[/dim]")
             return
         with open(log_path, encoding="utf-8") as fh:
             lines = fh.readlines()
-        console.print(f"[bold]{len(lines)} recorded change(s):[/bold]")
+        console.# # # print(f...",),[bold]{len(lines)} recorded change(s):[/bold]")
         for line in lines[-20:]:
-            console.print(f"  [dim]{line.rstrip()}[/dim]")
+            console.# # # print(f...",),  [dim]{line.rstrip()}[/dim]")
 
     def _cmd_rollback(self, args) -> None:
         if not self.engine or not self.engine.changes.entries:
-            console.print("[dim]Nothing to roll back.[/dim]")
+            console.# # print("[dim]Nothing to roll back.[/dim]")
             return
         if self.engine.changes.rollback_last(None):
-            console.print("[green]+ Rolled back the last file change.[/green]")
+            console.# # print("[green]+ Rolled back the last file change.[/green]")
         else:
-            console.print("[red]Rollback failed.[/red]")
+            console.# # print("[red]Rollback failed.[/red]")
 
     def _cmd_config(self, args) -> None:
         if not args:
             import json as _json
-            console.print(_json.dumps(self.config.data, indent=2))
+            console.# # print(_json.dumps(self.config.data, indent=2))
             return
         if args[0] == "set" and len(args) >= 3:
             key, value = args[1], " ".join(args[2:])
@@ -494,23 +494,23 @@ class GuardianCLI:
                 self.config.set(key, parsed)
                 self.config._validate()
                 self.config.save()
-                console.print(f"[green]+ Saved:[/green] {key} = {parsed}")
+                console.# # # print(f...",),[green]+ Saved:[/green] {key} = {parsed}")
             except ConfigError as exc:
-                console.print(f"[red]{exc}[/red]")
+                console.# # # print(f...",),[red]{exc}[/red]")
         else:
-            console.print("Usage: [green]config set <dotted.key> <value>[/green]")
+            console.# # print("Usage: [green]config set <dotted.key> <value>[/green]")
 
     def _cmd_mode(self, args) -> None:
         modes = ["bug_fixer", "ui_fixer", "analyzer"]
         target = args[0] if args else Prompt.ask("Mode", choices=modes,
                                                  default=self.config.mode)
         if target not in modes:
-            console.print(f"[red]Unknown mode '{target}'.[/red]")
+            console.# # # print(f...",),[red]Unknown mode '{target}'.[/red]")
             return
         self.config.mode = target
         self.config.save()
         self.engine = None  # force engine rebuild with the new mode
-        console.print(f"[green]+ Mode set to {target}. Run 'scan' to apply.[/green]")
+        console.# # # print(f...",),[green]+ Mode set to {target}. Run 'scan' to apply.[/green]")
 
     def _cmd_clear(self, args) -> None:
         console.clear()
@@ -529,29 +529,29 @@ class GuardianCLI:
         pct = idx * 100 // max(total, 1)
         filled = int(pct / 5)
         bar = "#" * filled + "." * (20 - filled)
-        console.print(f"\n[cyan][{bar:<20}] {pct:>3}%[/cyan] [dim]({idx}/{total})[/dim]")
-        console.print(f"[dim]Analyzing:[/dim] {path}")
+        console.# # # print(f...",),\n[cyan][{bar:<20}] {pct:>3}%[/cyan] [dim]({idx}/{total})[/dim]")
+        console.# # # print(f...",),[dim]Analyzing:[/dim] {path}")
 
     @staticmethod
     def _render_finding(finding) -> None:
         style = SEVERITY_STYLES.get(finding.severity, "")
         icon = SEVERITY_ICONS.get(finding.severity, "")
         conf = int(finding.confidence * 100)
-        console.print(f"  [{style}]{icon} {finding.severity}[/{style}] "
+        console.# # # print(f...",),  [{style}]{icon} {finding.severity}[/{style}] "
                       f"{finding.file}:{finding.line} - {finding.category} "
                       f"[dim]({conf}%)[/dim]")
-        console.print(f"    [dim]{finding.description}[/dim]")
+        console.# # # print(f...",),    [dim]{finding.description}[/dim]")
 
     @staticmethod
     def _render_fix(finding, ok: bool, note: str) -> None:
         style = "green" if ok else "red"
         label = "+ FIX APPLIED" if ok else "x FIX FAILED"
         suffix = f" [dim]- {note}[/dim]" if note else ""
-        console.print(f"  [{style}]{label}[/{style}] {finding.file}:{finding.line}{suffix}")
+        console.# # # print(f...",),  [{style}]{label}[/{style}] {finding.file}:{finding.line}{suffix}")
 
     @staticmethod
     def _render_status(text: str) -> None:
-        console.print(f"[bold blue]>[/bold blue] {text}")
+        console.# # # print(f...",),[bold blue]>[/bold blue] {text}")
 
 
 def main() -> None:
@@ -560,7 +560,7 @@ def main() -> None:
     try:
         cli.run()
     except KeyboardInterrupt:
-        console.print("\n[yellow]Interrupted.[/yellow]")
+        console.# # print("\n[yellow]Interrupted.[/yellow]")
 
 
 if __name__ == "__main__":
