@@ -33,7 +33,7 @@ def atomic_write(path: str, content: str) -> None:
         os.replace(tmp_path, path)
     except OSError:
         if os.path.exists(tmp_path):
-            os.remove(tmp_path)
+            # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # os.remove(tmp_path)
         raise
 
 
