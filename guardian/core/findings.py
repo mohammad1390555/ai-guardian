@@ -190,7 +190,3 @@ class FindingStore:
         with open(tmp_path, "w", encoding="utf-8") as fh:
             fh.write("\n".join(lines))
         os.replace(tmp_path, self.notepad_path)
-
-
-# Local import placed at bottom to avoid a circular module-level dependency.
-import os  # noqa: E402
