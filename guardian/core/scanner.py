@@ -189,7 +189,8 @@ class Scanner:
         if os.path.exists(pkg_json):
             try:
                 import json
-                data = json.loads(open(pkg_json, encoding="utf-8").read())
+                with open(pkg_json, encoding="utf-8") as f:
+                    data = json.loads(f.read())
                 deps = list(data.get("dependencies", {}).keys()) + list(data.get("devDependencies", {}).keys())
             except (OSError, ValueError):
                 pass

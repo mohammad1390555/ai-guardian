@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional
@@ -119,7 +120,7 @@ def deduplicate(findings: List[Finding]) -> List[Finding]:
     unique: List[Finding] = []
     for f in findings:
         norm = re.sub(r"\W+", "", f.description.lower())[:80]
-        key = (f.file, max(0, f.line - 5), f.line + 5, norm)
+        key = f"{f.file}:{f.line}"
         if key in seen:
             continue
         seen.add(key)

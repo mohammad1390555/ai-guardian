@@ -76,6 +76,7 @@ class LLMClient:
                 wait = min(2 ** attempt * 2, 60)
                 if _is_rate_limit(exc):
                     wait = min(2 ** attempt * 5, 120)
+                wait += random.uniform(0, 1)  # jitter to prevent thundering herd
                 if attempt < max_retries:
                     time.sleep(wait)
         raise LLMError(f"Model request failed after {max_retries} attempts: {last_error}")

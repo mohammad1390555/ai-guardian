@@ -74,5 +74,5 @@ class SessionState:
         if relative_path in remaining:
             remaining.remove(relative_path)
         self.data["last_processed_file"] = relative_path
-        self.data["tokens_used"] = 0  # updated by engine before save
+        # tokens_used updated by engine before save — do not reset here
         self.save()

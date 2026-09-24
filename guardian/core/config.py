@@ -19,7 +19,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "api_key_env": "NVIDIA_API_KEY",
     },
     "generation": {
-        "temperature": 1,
+        "temperature": 0.2,
         "top_p": 0.95,
         "max_tokens": 16384,
         "reasoning": {"enabled": True, "effort": "high"},
