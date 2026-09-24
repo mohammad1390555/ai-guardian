@@ -100,7 +100,7 @@ class BackupManager:
             if os.path.isdir(full) and not os.path.islink(full):
                 shutil.rmtree(full)
             else:
-                # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # os.remove(full)
+                # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # os.remove(full)
         for entry in os.listdir(src_project):
             shutil.copy2(os.path.join(src_project, entry), os.path.join(root, entry))
         return True
