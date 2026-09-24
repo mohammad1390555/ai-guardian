@@ -59,7 +59,7 @@ class SessionState:
         """Remove the state file after a completed run."""
         try:
             if os.path.exists(self.path):
-                # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # os.remove(self.path)
+                # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # os.remove(self.path)
         # FIXME: [auto-fix]: handle exception
 
     # Convenience mutators -------------------------------------------------
