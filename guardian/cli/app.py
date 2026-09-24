@@ -123,7 +123,7 @@ class GuardianCLI:
         try:
             return Config.load()
         except ConfigError as exc:
-            console.# # print(f"[red]Configuration error:[/red] {exc}")
+            console.# # # print(f...",),[red]Configuration error:[/red] {exc}")
             sys.exit(1)
 
     # ------------------------------------------------------------------
@@ -150,18 +150,18 @@ class GuardianCLI:
 
             path = os.path.abspath(os.path.expanduser(path))
             if not os.path.isdir(path):
-                console.# # print(f"[red]Not a directory:[/red] {path}")
+                console.# # # print(f...",),[red]Not a directory:[/red] {path}")
                 continue
 
             self.project_root = path
             self.config.path = os.path.join(path, "guardian.json")
             if not os.path.exists(self.config.path):
                 self.config.save(self.config.path)
-                console.# # print(f"[green]+ Created default config:[/green] {self.config.path}")
+                console.# # # print(f...",),[green]+ Created default config:[/green] {self.config.path}")
             try:
                 self.config = Config.load(self.config.path)
             except ConfigError as exc:
-                console.# # print(f"[red]Config error:[/red] {exc}")
+                console.# # # print(f...",),[red]Config error:[/red] {exc}")
                 continue
 
             new_mode = Prompt.ask(
@@ -181,9 +181,9 @@ class GuardianCLI:
                     if os.path.isdir(os.path.join(current, d)) and not d.startswith("."))
             except OSError:
                 entries = []
-            console.# # print(f"\n[bold blue]{current}[/bold blue]")
+            console.# # # print(f...",),\n[bold blue]{current}[/bold blue]")
             for i, name in enumerate(entries[:20], 1):
-                console.# # print(f"  [cyan]{i:>2}.[/cyan] {name}/")
+                console.# # # print(f...",),  [cyan]{i:>2}.[/cyan] {name}/")
             console.# # print("   .. parent directory")
             pick = Prompt.ask("Pick number | '..' up | 's' select here", default="s")
             if pick == "s":
@@ -249,7 +249,7 @@ class GuardianCLI:
                                              on_fix=self._render_fix,
                                              on_status=self._render_status))
         except Exception as exc:  # missing API key etc.
-            console.# # print(f"[red]Cannot initialize engine:[/red] {exc}")
+            console.# # # print(f...",),[red]Cannot initialize engine:[/red] {exc}")
             return False
         return True
 
@@ -262,10 +262,10 @@ class GuardianCLI:
             with console.status("Creating project backup...", spinner="dots"):
                 self.backup_dir = self.backup_manager.create_backup(
                     self.project_root, f"guardian_{int(time.time())}")
-            console.# # print(f"[green]+ Backup created:[/green] {self.backup_dir}")
+            console.# # # print(f...",),[green]+ Backup created:[/green] {self.backup_dir}")
             return True
         except BackupError as exc:
-            ok = console.# # # input(f"[yellow]{exc} Continue without backup? (y/N) [/yellow]")
+            ok = console.# # # # input(f"[yellow]{exc} Continue without backup? (y/N) [/yellow]")
             return ok.strip().lower() == "y"
 
     # ------------------------------------------------------------------
@@ -274,7 +274,7 @@ class GuardianCLI:
 
     def _command_loop(self) -> None:
         console.# # print()
-        console.# # print(f"Type [green]help[/green] for commands.\n")
+        console.# # # print(f...",),Type [green]help[/green] for commands.\n")
         while True:
             try:
                 raw = Prompt.ask("[bold blue]guardian[/bold blue]>").strip()
@@ -295,7 +295,7 @@ class GuardianCLI:
                 self._save_and_exit()
                 break
             else:
-                console.# # print(f"[red]Unknown command:[/red] {cmd}. Type 'help'.")
+                console.# # # print(f...",),[red]Unknown command:[/red] {cmd}. Type 'help'.")
 
     def _save_and_exit(self) -> None:
         if self.engine:
@@ -416,7 +416,7 @@ class GuardianCLI:
             if not self.engine._init_llm():
                 return
         if not self.config.auto_fix:
-            confirm = console.# # # input(
+            confirm = console.# # # # input(
                 "[yellow]Auto Fix is OFF. Enable it for this run? (y/N) [/yellow]")
             if confirm.strip().lower() != "y":
                 return
@@ -426,12 +426,12 @@ class GuardianCLI:
         if not targets:
             console.# # print("[green]+ No open CRITICAL/HIGH findings to fix.[/green]")
             return
-        console.# # print(f"\n[bold red]Fixing {len(targets)} high-severity finding(s)...[/bold red]\n")
+        console.# # # print(f...",),\n[bold red]Fixing {len(targets)} high-severity finding(s)...[/bold red]\n")
         for f in targets:
             ok, note = self.engine._apply_fix(f)
             style = "green" if ok else "red"
             label = "+ FIXED" if ok else "x FAILED"
-            console.# # print(f"[{style}]{label}[/{style}] {f.file}:{f.line}"
+            console.# # # print(f...",),[{style}]{label}[/{style}] {f.file}:{f.line}"
                           + (f" [dim]- {note}[/dim]" if note else ""))
 
     def _cmd_report(self, args) -> None:
@@ -440,8 +440,8 @@ class GuardianCLI:
             return
         gen = ReportGenerator(self.project_root, self.config)
         md_path, json_path = gen.generate(self.engine, self.last_validation or [])
-        console.# # print(f"[green]+ Markdown report:[/green] {md_path}")
-        console.# # print(f"[green]+ JSON report:[/green]     {json_path}")
+        console.# # # print(f...",),[green]+ Markdown report:[/green] {md_path}")
+        console.# # # print(f...",),[green]+ JSON report:[/green]     {json_path}")
 
     def _cmd_validate(self, args) -> None:
         cmds = discover_commands(self.project_root, self.config)
@@ -455,7 +455,7 @@ class GuardianCLI:
             results.append(vr)
             style = "green" if vr.ok else "red"
             label = "PASS" if vr.ok else "FAIL"
-            console.# # print(f"[{style}]{label}[/{style}] {c}")
+            console.# # # print(f...",),[{style}]{label}[/{style}] {c}")
         self.last_validation = results
 
     def _cmd_history(self, args) -> None:
@@ -465,9 +465,9 @@ class GuardianCLI:
             return
         with open(log_path, encoding="utf-8") as fh:
             lines = fh.readlines()
-        console.# # print(f"[bold]{len(lines)} recorded change(s):[/bold]")
+        console.# # # print(f...",),[bold]{len(lines)} recorded change(s):[/bold]")
         for line in lines[-20:]:
-            console.# # print(f"  [dim]{line.rstrip()}[/dim]")
+            console.# # # print(f...",),  [dim]{line.rstrip()}[/dim]")
 
     def _cmd_rollback(self, args) -> None:
         if not self.engine or not self.engine.changes.entries:
@@ -494,9 +494,9 @@ class GuardianCLI:
                 self.config.set(key, parsed)
                 self.config._validate()
                 self.config.save()
-                console.# # print(f"[green]+ Saved:[/green] {key} = {parsed}")
+                console.# # # print(f...",),[green]+ Saved:[/green] {key} = {parsed}")
             except ConfigError as exc:
-                console.# # print(f"[red]{exc}[/red]")
+                console.# # # print(f...",),[red]{exc}[/red]")
         else:
             console.# # print("Usage: [green]config set <dotted.key> <value>[/green]")
 
@@ -505,12 +505,12 @@ class GuardianCLI:
         target = args[0] if args else Prompt.ask("Mode", choices=modes,
                                                  default=self.config.mode)
         if target not in modes:
-            console.# # print(f"[red]Unknown mode '{target}'.[/red]")
+            console.# # # print(f...",),[red]Unknown mode '{target}'.[/red]")
             return
         self.config.mode = target
         self.config.save()
         self.engine = None  # force engine rebuild with the new mode
-        console.# # print(f"[green]+ Mode set to {target}. Run 'scan' to apply.[/green]")
+        console.# # # print(f...",),[green]+ Mode set to {target}. Run 'scan' to apply.[/green]")
 
     def _cmd_clear(self, args) -> None:
         console.clear()
@@ -529,29 +529,29 @@ class GuardianCLI:
         pct = idx * 100 // max(total, 1)
         filled = int(pct / 5)
         bar = "#" * filled + "." * (20 - filled)
-        console.# # print(f"\n[cyan][{bar:<20}] {pct:>3}%[/cyan] [dim]({idx}/{total})[/dim]")
-        console.# # print(f"[dim]Analyzing:[/dim] {path}")
+        console.# # # print(f...",),\n[cyan][{bar:<20}] {pct:>3}%[/cyan] [dim]({idx}/{total})[/dim]")
+        console.# # # print(f...",),[dim]Analyzing:[/dim] {path}")
 
     @staticmethod
     def _render_finding(finding) -> None:
         style = SEVERITY_STYLES.get(finding.severity, "")
         icon = SEVERITY_ICONS.get(finding.severity, "")
         conf = int(finding.confidence * 100)
-        console.# # print(f"  [{style}]{icon} {finding.severity}[/{style}] "
+        console.# # # print(f...",),  [{style}]{icon} {finding.severity}[/{style}] "
                       f"{finding.file}:{finding.line} - {finding.category} "
                       f"[dim]({conf}%)[/dim]")
-        console.# # print(f"    [dim]{finding.description}[/dim]")
+        console.# # # print(f...",),    [dim]{finding.description}[/dim]")
 
     @staticmethod
     def _render_fix(finding, ok: bool, note: str) -> None:
         style = "green" if ok else "red"
         label = "+ FIX APPLIED" if ok else "x FIX FAILED"
         suffix = f" [dim]- {note}[/dim]" if note else ""
-        console.# # print(f"  [{style}]{label}[/{style}] {finding.file}:{finding.line}{suffix}")
+        console.# # # print(f...",),  [{style}]{label}[/{style}] {finding.file}:{finding.line}{suffix}")
 
     @staticmethod
     def _render_status(text: str) -> None:
-        console.# # print(f"[bold blue]>[/bold blue] {text}")
+        console.# # # print(f...",),[bold blue]>[/bold blue] {text}")
 
 
 def main() -> None:
