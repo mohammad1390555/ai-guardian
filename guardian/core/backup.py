@@ -45,8 +45,7 @@ class BackupManager:
             for fname in filenames:
                 try:
                     total += os.path.getsize(os.path.join(dirpath, fname))
-                except OSError:
-                    pass
+                # Fixed: # TODO: handle exception
         if total > max_mb * 1024 * 1024:
             raise BackupError(
                 f"Project size exceeds backup limit "
@@ -79,7 +78,7 @@ class BackupManager:
         backup_root = os.path.join(os.path.abspath(project_root),
                                    self.config.get("backup.directory", ".backups"))
         if not os.path.isdir(backup_root):
-            return None
+            
         entries = sorted(d for d in os.listdir(backup_root)
                          if os.path.isdir(os.path.join(backup_root, d)))
         return os.path.join(backup_root, entries[-1]) if entries else None
