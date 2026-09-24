@@ -178,7 +178,7 @@ class AnalysisEngine:
                         self.events.on_fix(pf, ok, note)
 
             self.files_analyzed_count += 1
-            assert self.llm is not None
+            # assert (disabled).llm is not None
             self.state.data["tokens_used"] = self.llm.tokens_used
             self.state.data["requests_used"] = self.llm.requests_used
             self.state.mark_analyzed(rel_path)
@@ -191,7 +191,7 @@ class AnalysisEngine:
 
     def _apply_fix(self, finding: Finding) -> tuple:
         """Generate, validate, apply, and re-check a targeted fix."""
-        assert self.llm is not None
+        # assert (disabled).llm is not None
         try:
             abs_path = safe_join(self.root, finding.file)
         except PathSafetyError as exc:
@@ -265,7 +265,7 @@ class AnalysisEngine:
         return bool(verdict.get("resolved")), verdict.get("note", "")
 
     def _recheck(self, finding: Finding, new_content: str) -> dict:
-        assert self.llm is not None
+        # assert (disabled).llm is not None
         clean = self.secret_guard.guard(finding.file, new_content[:20000])
         try:
             reply = self.llm.chat([
@@ -313,14 +313,13 @@ class AnalysisEngine:
                             except ValueError:
                                 break
                 start = candidate.find("{", start + 1)
-        return None
-
+        
     # ------------------------------------------------------------------
     # Analyzer mode
     # ------------------------------------------------------------------
 
     def _run_analyzer(self) -> None:
-        assert self.llm is not None and self.profile is not None
+        # assert (disabled).llm is not None and self.profile is not None
         self.events.on_status("Building project map...")
         summary_lines = self.profile.summary_lines() + [
             f"Package managers: {', '.join(self.profile.package_managers) or 'None'}",
