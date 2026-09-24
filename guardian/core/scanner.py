@@ -104,7 +104,7 @@ def looks_binary(path: str) -> bool:
     try:
         with open(path, "rb") as fh:
             return b"\x00" in fh.read(8192)
-    except OSError:
+    # Fixed: except OSError:
         return True
 
 
@@ -285,4 +285,4 @@ def detect_minified_or_generated(path: str, content: str) -> Optional[str]:
     avg_len = sum(len(l) for l in content.splitlines()) / max(len(content.splitlines()), 1)
     if avg_len > 500:
         return "likely minified"
-    return None
+    
