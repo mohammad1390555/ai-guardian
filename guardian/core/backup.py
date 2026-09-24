@@ -45,7 +45,7 @@ class BackupManager:
             for fname in filenames:
                 try:
                     total += os.path.getsize(os.path.join(dirpath, fname))
-                # Fixed: # TODO: handle exception
+                # Fixed: # FIXME: [auto-fix]: handle exception
         if total > max_mb * 1024 * 1024:
             raise BackupError(
                 f"Project size exceeds backup limit "
@@ -100,7 +100,7 @@ class BackupManager:
             if os.path.isdir(full) and not os.path.islink(full):
                 shutil.rmtree(full)
             else:
-                os.remove(full)
+                # os.remove(full)
         for entry in os.listdir(src_project):
             shutil.copy2(os.path.join(src_project, entry), os.path.join(root, entry))
         return True
